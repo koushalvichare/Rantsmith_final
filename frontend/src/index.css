@@ -1,0 +1,306 @@
+/*
+  RantSmith AI - Elite UI/UX Design System
+  =====================================
+  - Glassmorphism, gradients, neon/cyberpunk, and micro-interactions
+  - Responsive, accessible, and visually stunning
+  - Minimal custom CSS, maximum Tailwind utility
+  - Enhanced depth, motion, and tactile feedback
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&family=Orbitron:wght@700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #6366f1;
+  --accent: #ec4899;
+  --neon: #a855f7;
+  --bg-dark: #0a0a0f;
+  --bg-glass: rgba(255,255,255,0.06);
+  --border-glass: rgba(255,255,255,0.13);
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.32);
+  --shadow-deep: 0 12px 48px 0 rgba(80,0,120,0.25), 0 1.5px 8px 0 rgba(0,0,0,0.18);
+  --focus-ring: 0 0 0 3px var(--primary), 0 0 0 6px var(--accent);
+}
+
+body {
+  @apply bg-gradient-to-br from-[#0a0a0f] via-[#151520] to-[#1e293b] text-white min-h-screen font-sans antialiased;
+  background-attachment: fixed;
+  font-family: 'Inter', 'JetBrains Mono', 'Orbitron', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 60% 10%, var(--neon) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, var(--accent) 0%, transparent 70%);
+  opacity: 0.12;
+  animation: bg-float 12s ease-in-out infinite alternate;
+}
+
+@keyframes bg-float {
+  0% { filter: blur(0px); }
+  100% { filter: blur(8px); }
+}
+
+/* Background Mesh */
+.bg-mesh {
+  background: 
+    radial-gradient(ellipse at 60% 10%, rgba(168, 85, 247, 0.15) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 70%),
+    radial-gradient(ellipse at 80% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, #0a0a0f 0%, #151520 50%, #1e293b 100%);
+  background-attachment: fixed;
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+}
+
+/* Glassmorphism Card */
+.card {
+  @apply bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl backdrop-blur-2xl relative overflow-hidden;
+  box-shadow: var(--shadow-glass), var(--shadow-deep), 0 0 0 2px var(--neon);
+  border: 1.5px solid var(--border-glass);
+  transition: box-shadow 0.3s, transform 0.3s, border 0.3s;
+  z-index: 1;
+}
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 2px solid var(--neon);
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.3s;
+}
+.card:hover {
+  @apply shadow-2xl scale-[1.03];
+  box-shadow: 0 0 48px 0 var(--neon), var(--shadow-deep);
+  border: 2px solid var(--accent);
+}
+
+/* Buttons */
+.btn {
+  @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 relative overflow-hidden;
+  min-width: 120px;
+  min-height: 44px;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 16px 0 rgba(168,85,247,0.12);
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+}
+.btn-primary {
+  @apply btn bg-gradient-to-r from-primary-500 to-pink-500 text-white shadow-lg hover:from-pink-500 hover:to-primary-500;
+  position: relative;
+  border: 1.5px solid var(--neon);
+  box-shadow: 0 0 12px 2px var(--neon), 0 2px 16px 0 rgba(168,85,247,0.12);
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 24px 4px var(--neon);
+  opacity: 0.18;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.btn-primary:active {
+  transform: scale(0.97);
+  filter: brightness(1.08);
+}
+.btn-secondary {
+  @apply btn bg-white/10 text-white border border-white/20 hover:bg-white/20;
+  border: 1.5px solid var(--primary);
+}
+.btn-ghost {
+  @apply btn bg-transparent text-gray-300 hover:bg-white/10;
+  border: 1.5px solid var(--border-glass);
+}
+.btn:focus-visible {
+  box-shadow: var(--focus-ring), 0 0 0 4px var(--neon);
+}
+.btn:active {
+  filter: brightness(0.98);
+}
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple:after {
+  content: '';
+  display: block;
+  position: absolute;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background: radial-gradient(circle, var(--neon) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.btn-ripple:active:after {
+  opacity: 0.25;
+  transition: 0s;
+}
+
+/* Fix for button clickability issues */
+button {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+button:disabled {
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Ensure all interactive elements are clickable */
+.clickable {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+/* Fix for motion components */
+.motion-button {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto !important;
+}
+
+/* Inputs */
+.input {
+  @apply w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+  min-height: 44px;
+  font-size: 1.08rem;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 1.5px 8px 0 rgba(99,102,241,0.08);
+  border: 1.5px solid var(--neon);
+  background-clip: padding-box;
+}
+.input:focus-visible {
+  box-shadow: var(--focus-ring), 0 0 0 4px var(--neon);
+  border: 1.5px solid var(--accent);
+}
+.input:active {
+  filter: brightness(1.05);
+}
+
+/* Typography */
+.gradient-text {
+  @apply bg-gradient-to-r from-primary-500 via-pink-500 to-purple-500 bg-clip-text text-transparent font-extrabold;
+  font-family: 'Orbitron', 'Inter', sans-serif;
+  background-size: 200% 200%;
+  animation: gradient-move 4s ease-in-out infinite;
+  letter-spacing: 0.04em;
+}
+.cyber {
+  font-family: 'Orbitron', 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.heading {
+  @apply font-extrabold text-3xl md:text-4xl lg:text-5xl mb-4 gradient-text;
+  line-height: 1.1;
+  text-shadow: 0 2px 16px var(--neon), 0 1px 2px rgba(0,0,0,0.18);
+}
+.subheading {
+  @apply font-semibold text-xl md:text-2xl text-pink-500 mb-2;
+  text-shadow: 0 1px 4px var(--accent), 0 1px 2px rgba(0,0,0,0.12);
+}
+
+/* Neon Glow */
+.neon-glow {
+  text-shadow: 0 0 8px var(--neon), 0 0 24px var(--accent), 0 0 2px #fff;
+}
+
+/* Responsive Container */
+.container {
+  @apply max-w-5xl mx-auto px-4;
+  background: linear-gradient(120deg,rgba(99,102,241,0.04) 0%,rgba(236,72,153,0.04) 100%);
+  border-radius: 1.5rem;
+  box-shadow: 0 2px 24px 0 rgba(99,102,241,0.06);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-primary-500 rounded-full;
+  box-shadow: 0 0 8px var(--neon);
+}
+::-webkit-scrollbar-track {
+  @apply bg-dark-900;
+}
+
+/* Selection */
+::selection {
+  background: var(--accent);
+  color: #fff;
+  text-shadow: 0 0 4px var(--neon);
+}
+
+/* Utility */
+.text-shadow {
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4), 0 0 8px var(--neon);
+}
+
+/* Animations */
+@keyframes gradient-move {
+  0%,100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Accessibility */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *:before, *:after {
+    transition: none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Responsive Tweaks */
+@media (max-width: 1024px) {
+  .heading { @apply text-3xl; }
+  .subheading { @apply text-lg; }
+}
+@media (max-width: 768px) {
+  .card { @apply p-4 rounded-xl; }
+  .btn { @apply px-4 py-2 text-sm; min-width: 90px; }
+  .input { @apply px-3 py-2 text-base; }
+  .heading { @apply text-2xl; }
+}
+@media (max-width: 480px) {
+  .container { @apply px-2; }
+  .card { @apply p-2 rounded-lg; }
+  .btn { @apply px-2 py-2 text-xs; min-width: 70px; }
+  .heading { @apply text-xl; }
+}
+
+/* Dark/Light Mode Prep (optional, for future) */
+[data-theme='light'] {
+  --bg-dark: #f7f7fa;
+  --bg-glass: rgba(255,255,255,0.7);
+  --border-glass: rgba(0,0,0,0.08);
+  --shadow-glass: 0 8px 32px rgba(0,0,0,0.08);
+  color: #18181b;
+}

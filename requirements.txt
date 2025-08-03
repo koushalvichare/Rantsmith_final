@@ -1,0 +1,49 @@
+# Core Flask dependencies
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.2
+Flask-CORS==4.0.0
+Werkzeug==2.3.7
+python-dotenv==1.0.0
+PyJWT==2.8.0
+
+# AI and ML dependencies
+openai==0.28.1
+google-generativeai==0.8.5
+requests==2.31.0
+
+# Audio and Image Processing
+Pillow==10.0.0
+moviepy==1.0.3
+pydub==0.25.1
+SpeechRecognition==3.10.0
+gTTS==2.3.2
+opencv-python==4.8.1.78
+pyaudio==0.2.11
+pygame==2.5.2
+opencv-python==4.8.0.76
+
+# NLP dependencies
+nltk==3.8.1
+textblob==0.17.1
+
+# File handling
+python-multipart==0.0.6
+
+# Production server
+gunicorn==21.2.0
+
+# Database
+SQLAlchemy==2.0.20
+
+# Testing
+pytest==7.4.2
+pytest-flask==1.2.0
+
+# Security
+bcrypt==4.0.1
+
+# Additional dependencies
+redis==4.6.0
+celery==5.3.1
+python-jose==3.3.0
