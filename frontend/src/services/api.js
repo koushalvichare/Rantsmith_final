@@ -149,12 +149,13 @@ class APIService {
     });
   }
 
-  async chatWithAI(message, conversationId = null) {
+  async chatWithAI(message, conversationId = null, personality = 'psychologist') {
     return await this.makeRequest('/api/ai/chat', {
       method: 'POST',
       body: JSON.stringify({
         message,
-        conversation_id: conversationId
+        conversation_id: conversationId,
+        personality: personality
       })
     });
   }

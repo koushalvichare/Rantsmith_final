@@ -143,8 +143,8 @@ def customize_personality():
     try:
         data = request.get_json()
         
-        allowed_personalities = ['supportive', 'sarcastic', 'humorous', 'motivational', 'professional']
-        personality = data.get('personality', 'supportive')
+        allowed_personalities = ['supportive', 'sarcastic', 'humorous', 'motivational', 'professional', 'psychologist']
+        personality = data.get('personality', 'psychologist')
         
         if personality not in allowed_personalities:
             return jsonify({'error': 'Invalid personality type'}), 400
@@ -200,7 +200,7 @@ def chat_with_ai():
             return jsonify({'error': 'Message is required'}), 400
         
         user_message = data.get('message')
-        personality = data.get('personality', 'supportive')
+        personality = data.get('personality', 'psychologist')
         conversation_id = data.get('conversation_id')
         
         # Use the global Gemini service that's already initialized

@@ -24,7 +24,7 @@ const AIChat = () => {
     // Initial greeting message
     const initialMessage = {
       id: 1,
-      text: `Hey ${user?.username || 'there'}! 👋 I'm your AI companion here to help with anything on your mind. Whether you want to vent, brainstorm, or just chat - I'm here for you! What's going on?`,
+      text: `Hello ${user?.username || 'there'}! 👋 I'm Dr. Sarah, your AI psychologist companion. I'm here to provide a safe, supportive space where you can explore your thoughts and feelings. Whether you're dealing with stress, need emotional support, or just want someone to listen - I'm here for you. What would you like to talk about today?`,
       sender: 'ai',
       timestamp: new Date().toISOString()
     };
@@ -88,11 +88,11 @@ const AIChat = () => {
 
   const quickReplies = [
     "I'm feeling stressed 😰",
-    "Work is overwhelming 💼",
-    "I need to vent 💭",
-    "Help me process my thoughts 🤔",
-    "I'm having a rough day 😔",
-    "Tell me a joke 😂"
+    "Help me understand my emotions 🧠",
+    "I need someone to talk to 💭",
+    "What coping strategies do you recommend? 🌱",
+    "Tell me a psychology joke �",
+    "How can I process these feelings? 🤔"
   ];
 
   const handleQuickReply = (reply) => {
@@ -103,8 +103,8 @@ const AIChat = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pt-20 pb-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="text-center mb-6">
-          <h1 className="text-4xl font-bold text-white mb-2">🤖 AI Chat Companion</h1>
-          <p className="text-xl text-gray-300">Your friendly AI assistant for emotional support and conversation</p>
+          <h1 className="text-4xl font-bold text-white mb-2">� Dr. Sarah - AI Psychologist</h1>
+          <p className="text-xl text-gray-300">Professional psychological support and emotional guidance</p>
         </div>
 
         <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 h-[70vh] flex flex-col">
@@ -187,19 +187,19 @@ const AIChat = () => {
         {/* Features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-xl p-4 text-center">
-            <div className="text-2xl mb-2">🎭</div>
-            <h3 className="text-white font-medium mb-1">Emotional Support</h3>
-            <p className="text-xs text-gray-400">I'm here to listen and provide support</p>
+            <div className="text-2xl mb-2">🧠</div>
+            <h3 className="text-white font-medium mb-1">Psychological Insight</h3>
+            <p className="text-xs text-gray-400">Evidence-based therapeutic guidance</p>
           </div>
           <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-xl p-4 text-center">
-            <div className="text-2xl mb-2">💡</div>
-            <h3 className="text-white font-medium mb-1">Brainstorming</h3>
-            <p className="text-xs text-gray-400">Let's think through problems together</p>
+            <div className="text-2xl mb-2">�</div>
+            <h3 className="text-white font-medium mb-1">Emotional Processing</h3>
+            <p className="text-xs text-gray-400">Safe space to explore feelings</p>
           </div>
           <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-xl p-4 text-center">
-            <div className="text-2xl mb-2">🌟</div>
-            <h3 className="text-white font-medium mb-1">Creative Ideas</h3>
-            <p className="text-xs text-gray-400">Explore creative solutions and perspectives</p>
+            <div className="text-2xl mb-2">�</div>
+            <h3 className="text-white font-medium mb-1">Coping Strategies</h3>
+            <p className="text-xs text-gray-400">Practical tools for mental wellness</p>
           </div>
         </div>
       </div>
