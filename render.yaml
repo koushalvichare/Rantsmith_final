@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: rantsmith-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT run:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///rantsmith.db
+      # Add your API keys in the Render dashboard environment variables section
+      # - key: GEMINI_API_KEY
+      #   value: your-gemini-api-key
+      # - key: OPENAI_API_KEY
+      #   value: your-openai-api-key
+      # - key: ELEVENLABS_API_KEY
+      #   value: your-elevenlabs-api-key
+      # - key: RUNWAYML_API_KEY
+      #   value: your-runwayml-api-key

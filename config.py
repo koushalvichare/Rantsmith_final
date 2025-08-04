@@ -1,7 +1,9 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Only load .env in development
+if os.environ.get('FLASK_ENV') != 'production':
+    load_dotenv()
 
 class Config:
     """Base configuration"""
@@ -12,6 +14,7 @@ class Config:
     # AI Service API Keys
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+    GOOGLE_API_KEY = os.environ.get('GOOGLE_API_KEY') or os.environ.get('GEMINI_API_KEY')
     ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY')
     RUNWAYML_API_KEY = os.environ.get('RUNWAYML_API_KEY')
     
