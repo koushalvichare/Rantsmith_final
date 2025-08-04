@@ -1,18 +1,20 @@
-from flask import Blueprint, request, jsonify
+from flask_login import current_user
+from flask import Blueprint, request, jsonify, current_app
+from datetime import datetime
 from app import db
 from app.models import Rant, GeneratedContent, ContentType, EmotionType
-from app.services.ai_service import AIService
-from app.services.content_generator import ContentGenerator
+from app.services.gemini_service import GeminiService
 from app.utils.auth import jwt_required
+import json
 
 ai_bp = Blueprint('ai', __name__)
 
 @ai_bp.route('/process/<int:rant_id>', methods=['POST'])
 @jwt_required
 def process_rant(rant_id):
-    """Process a rant with AI"""
+    """Process a rant with AI using Gemini Service"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
@@ -20,29 +22,23 @@ def process_rant(rant_id):
         if rant.processed:
             return jsonify({'error': 'Rant already processed'}), 400
         
-        # Initialize AI service
-        ai_service = AIService()
+        # Initialize Gemini service
+        gemini_service = current_app.gemini_service
         
         # Analyze rant
-        analysis = ai_service.analyze_rant(rant)
+        analysis = gemini_service.analyze_rant(rant)
         
-        # Update rant with analysis - convert emotion string to enum
+        # Update rant with analysis
         emotion_str = analysis.get('emotion', 'neutral')
-        if isinstance(emotion_str, str):
-            try:
-                # Try to find matching EmotionType
-                rant.detected_emotion = next(
-                    (emotion for emotion in EmotionType if emotion.value.lower() == emotion_str.lower()),
-                    EmotionType.NEUTRAL
-                )
-            except:
-                rant.detected_emotion = EmotionType.NEUTRAL
-        else:
-            rant.detected_emotion = emotion_str
+        try:
+            rant.detected_emotion = EmotionType(emotion_str.lower())
+        except ValueError:
+            rant.detected_emotion = EmotionType.NEUTRAL
             
         rant.emotion_confidence = analysis.get('emotion_confidence')
         rant.sentiment_score = analysis.get('sentiment_score')
-        rant.keywords = analysis.get('keywords')
+        # Ensure keywords are stored as a JSON string
+        rant.keywords = json.dumps(analysis.get('keywords', []))
         rant.processing_status = 'completed'
         rant.processed = True
         
@@ -61,46 +57,42 @@ def process_rant(rant_id):
 @ai_bp.route('/generate-content/<int:rant_id>', methods=['POST'])
 @jwt_required
 def generate_content(rant_id):
-    """Generate content from a rant"""
+    """Generate content from a rant using Gemini Service"""
     try:
         data = request.get_json()
         content_type = data.get('content_type', 'text')
         
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
         
-        # Initialize content generator
-        content_generator = ContentGenerator()
+        # Initialize Gemini service
+        gemini_service = current_app.gemini_service
         
         # Generate content based on type
-        if content_type == 'meme':
-            result = content_generator.generate_meme(rant)
-        elif content_type == 'tweet':
-            result = content_generator.generate_tweet(rant)
-        elif content_type == 'song':
-            result = content_generator.generate_song(rant)
-        elif content_type == 'script':
-            result = content_generator.generate_script(rant)
-        elif content_type == 'audio':
-            result = content_generator.generate_audio(rant)
-        elif content_type == 'video':
-            result = content_generator.generate_video(rant)
-        else:
-            result = content_generator.generate_text(rant)
+        transformation_map = {
+            'poem': 'poem',
+            'song': 'song',
+            'story': 'story',
+            'motivational': 'motivational',
+            'letter': 'letter'
+        }
+        
+        transformation_type = transformation_map.get(content_type)
+        if not transformation_type:
+            return jsonify({'error': 'Invalid content type'}), 400
+
+        result = gemini_service.transform_content(rant.content, transformation_type)
         
         # Save generated content
         generated_content = GeneratedContent(
-            user_id=request.current_user.id,
+            user_id=current_user.id,
             rant_id=rant_id,
             content_type=ContentType(content_type),
-            title=result.get('title'),
-            content=result.get('content'),
-            file_path=result.get('file_path'),
-            ai_model_used=result.get('model_used'),
-            processing_time=result.get('processing_time'),
-            quality_score=result.get('quality_score')
+            title=f"{transformation_type.capitalize()} from Rant #{rant.id}",
+            content=result,
+            ai_model_used='gemini-1.5-pro-latest'
         )
         
         db.session.add(generated_content)
@@ -120,16 +112,21 @@ def generate_content(rant_id):
 def suggest_actions(rant_id):
     """Generate action suggestions for a rant"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
         
-        # Initialize AI service
-        ai_service = AIService()
+        # This can be expanded with Gemini in the future, for now, it's a placeholder
+        # from app.services.ai_service import AIService
+        # ai_service = AIService()
+        # suggestions = ai_service.suggest_actions(rant)
         
-        # Generate action suggestions
-        suggestions = ai_service.suggest_actions(rant)
+        # Placeholder suggestions
+        suggestions = [
+            {'type': 'journal', 'title': 'Write it down', 'description': 'Journaling can help clarify your thoughts.'},
+            {'type': 'talk', 'title': 'Talk to someone', 'description': 'Sharing with a friend can lighten the load.'}
+        ]
         
         return jsonify({
             'message': 'Action suggestions generated',
@@ -152,7 +149,7 @@ def customize_personality():
         if personality not in allowed_personalities:
             return jsonify({'error': 'Invalid personality type'}), 400
         
-        request.current_user.ai_personality = personality
+        current_user.ai_personality = personality
         db.session.commit()
         
         return jsonify({
@@ -173,13 +170,12 @@ def get_content_history():
         per_page = request.args.get('per_page', 10, type=int)
         content_type = request.args.get('type')
         
-        query = GeneratedContent.query.filter_by(user_id=request.current_user.id)
+        query = GeneratedContent.query.filter_by(user_id=current_user.id)
         
         if content_type:
             query = query.filter_by(content_type=ContentType(content_type))
         
-        contents = query.order_by(GeneratedContent.created_at.desc())\
-                       .paginate(page=page, per_page=per_page, error_out=False)
+        contents = query.order_by(GeneratedContent.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
         
         return jsonify({
             'contents': [content.to_dict() for content in contents.items],
@@ -193,114 +189,82 @@ def get_content_history():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Additional routes for frontend compatibility
-@ai_bp.route('/analyze/<int:rant_id>', methods=['POST'])
+@ai_bp.route('/chat', methods=['POST'])
 @jwt_required
-def analyze_rant_endpoint(rant_id):
-    """Analyze a rant with AI - frontend compatible endpoint"""
-    return process_rant(rant_id)
-
-@ai_bp.route('/generate/text/<int:rant_id>', methods=['POST'])
-@jwt_required
-def generate_text_endpoint(rant_id):
-    """Generate text content from a rant"""
+def chat_with_ai():
+    """Chat with AI using Gemini"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        data = request.get_json()
         
-        if not rant:
-            return jsonify({'error': 'Rant not found'}), 404
+        if not data or not data.get('message'):
+            return jsonify({'error': 'Message is required'}), 400
         
-        # Generate text content
-        content_generator = ContentGenerator()
-        result = content_generator.generate_text(rant)
+        user_message = data.get('message')
+        personality = data.get('personality', 'supportive')
+        conversation_id = data.get('conversation_id')
         
-        # Save generated content
-        generated_content = GeneratedContent(
-            rant_id=rant_id,
-            user_id=request.current_user.id,
-            content_type=ContentType.TEXT,
-            content=result['content'],
-            ai_model_used=result.get('model_used', 'gemini-1.5-flash')
+        # Use the global Gemini service that's already initialized
+        gemini_service = current_app.gemini_service
+        
+        # Debug information
+        print(f"🔍 Chat - API key present: {bool(gemini_service.gemini_key)}")
+        print(f"🔍 Chat - Model available: {bool(gemini_service.model)}")
+        print(f"🔍 Chat - User message: {user_message[:50]}...")
+        
+        # Create a temporary rant object for the AI response
+        from app.models import Rant
+        temp_rant = Rant(
+            content=user_message,
+            user_id=current_user.id
         )
         
-        db.session.add(generated_content)
-        db.session.commit()
+        # Generate AI response using Gemini
+        ai_response = gemini_service.generate_response(temp_rant, personality)
+        print(f"🔍 Chat - AI response generated: {ai_response[:50]}...")
         
         return jsonify({
-            'message': 'Text generated successfully',
-            'generated_text': result['content'],
-            'model_used': result.get('model_used', 'gemini-1.5-flash')
+            'response': ai_response,
+            'personality': personality,
+            'timestamp': datetime.utcnow().isoformat(),
+            'conversation_id': conversation_id
         }), 200
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        print(f"❌ Chat error: {str(e)}")
+        return jsonify({'error': f'AI chat failed: {str(e)}'}), 500
 
-@ai_bp.route('/generate/meme/<int:rant_id>', methods=['POST'])
+@ai_bp.route('/test-gemini', methods=['GET'])
 @jwt_required
-def generate_meme_endpoint(rant_id):
-    """Generate meme content from a rant"""
+def test_gemini():
+    """Test Gemini API configuration"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        # Use the global Gemini service
+        gemini_service = current_app.gemini_service
         
-        if not rant:
-            return jsonify({'error': 'Rant not found'}), 404
+        # Check configuration
+        api_key_present = bool(gemini_service.gemini_key)
+        model_available = bool(gemini_service.model)
         
-        # Generate meme content
-        content_generator = ContentGenerator()
-        result = content_generator.generate_meme(rant)
-        
-        # Save generated content
-        generated_content = GeneratedContent(
-            rant_id=rant_id,
-            user_id=request.current_user.id,
-            content_type=ContentType.MEME,
-            content=result['content'],
-            ai_model_used=result.get('model_used', 'gemini-1.5-flash')
-        )
-        
-        db.session.add(generated_content)
-        db.session.commit()
+        # Try a simple test if model is available
+        test_response = None
+        if gemini_service.model:
+            try:
+                test_content = "Hello, this is a test."
+                response = gemini_service.model.generate_content(test_content)
+                test_response = response.text[:100] + "..." if len(response.text) > 100 else response.text
+            except Exception as e:
+                test_response = f"Model test failed: {str(e)}"
         
         return jsonify({
-            'message': 'Meme generated successfully',
-            'meme_text': result['content'],
-            'model_used': result.get('model_used', 'gemini-1.5-flash')
+            'api_key_present': api_key_present,
+            'api_key_value': gemini_service.gemini_key[:10] + "..." if gemini_service.gemini_key else None,
+            'model_available': model_available,
+            'model_name': 'gemini-1.5-pro-latest' if model_available else None,
+            'test_response': test_response,
+            'config_debug': {
+                'GEMINI_API_KEY': current_app.config.get('GEMINI_API_KEY', 'Not set')[:10] + "..." if current_app.config.get('GEMINI_API_KEY') else 'Not set'
+            }
         }), 200
         
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-@ai_bp.route('/generate/tweet/<int:rant_id>', methods=['POST'])
-@jwt_required
-def generate_tweet_endpoint(rant_id):
-    """Generate tweet content from a rant"""
-    try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
-        
-        if not rant:
-            return jsonify({'error': 'Rant not found'}), 404
-        
-        # Generate tweet content
-        content_generator = ContentGenerator()
-        result = content_generator.generate_tweet(rant)
-        
-        # Save generated content
-        generated_content = GeneratedContent(
-            rant_id=rant_id,
-            user_id=request.current_user.id,
-            content_type=ContentType.TWEET,
-            content=result['content'],
-            ai_model_used=result.get('model_used', 'gemini-1.5-flash')
-        )
-        
-        db.session.add(generated_content)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Tweet generated successfully',
-            'tweet_text': result['content'],
-            'model_used': result.get('model_used', 'gemini-1.5-flash')
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': f'Gemini test failed: {str(e)}'}), 500

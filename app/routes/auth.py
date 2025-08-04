@@ -50,22 +50,21 @@ def register():
         if User.query.filter_by(email=data['email']).first():
             return jsonify({'error': 'Email already registered'}), 409
         
-        # Create new user
-        user = User(
-            username=data['username'],
-            email=data['email'],
-            display_name=data.get('display_name', data['username']),
-            bio=data.get('bio', ''),
-            preferred_output_format=data.get('preferred_output_format', 'text'),
-            ai_personality=data.get('ai_personality', 'supportive')
-        )
+        # Create new user and set attributes individually
+        user = User()
+        user.username = data['username']
+        user.email = data['email']
+        user.display_name = data.get('display_name', data['username'])
+        user.bio = data.get('bio', '')
+        user.preferred_output_format = data.get('preferred_output_format', 'text')
+        user.ai_personality = data.get('ai_personality', 'supportive')
         user.set_password(data['password'])
-        
+
         db.session.add(user)
         db.session.commit()
-        
+
         token = generate_token(user.id)
-        
+
         return jsonify({
             'message': 'User registered successfully',
             'token': token,

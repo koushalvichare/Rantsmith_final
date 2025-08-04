@@ -1,3 +1,4 @@
+from flask_login import current_user
 from flask import Blueprint, request, jsonify
 from app.services.professional_media_service import ProfessionalMediaService
 from app.models import Rant, GeneratedContent, ContentType, User
@@ -34,7 +35,7 @@ def jwt_required(f):
                 return jsonify({'error': 'User not found'}), 404
             
             # Add user to request context
-            request.current_user = user
+            # request.current_user = user  # Not needed, use flask_login.current_user
             return f(*args, **kwargs)
             
         except Exception as e:
@@ -79,7 +80,7 @@ def upload_audio():
         if result['success']:
             # Create a new rant from the transcribed text
             rant = Rant(
-                user_id=request.current_user.id,
+                user_id=current_user.id,
                 content=result['text'],
                 input_type='audio',
                 processed=False
@@ -133,7 +134,7 @@ def upload_image():
 def generate_speech(rant_id):
     """Generate speech from rant text"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
         
@@ -162,7 +163,7 @@ def generate_speech(rant_id):
 def generate_meme(rant_id):
     """Generate meme from rant text"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
         
@@ -190,7 +191,7 @@ def generate_meme(rant_id):
 def generate_video(rant_id):
     """Generate video from rant text"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
         
@@ -219,7 +220,7 @@ def generate_video(rant_id):
 def transform_with_ai(rant_id):
     """Transform rant content and generate text output"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
         

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import apiService from '../services/api';
 
 const AIChat = () => {
   const { user } = useAuth();
@@ -43,77 +44,41 @@ const AIChat = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentMessage = inputMessage;
     setInputMessage('');
     setIsTyping(true);
     setLoading(true);
 
     try {
-      // Simulate AI response delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Call the real AI API using Gemini
+      console.log('🤖 Sending message to AI:', currentMessage);
+      const response = await apiService.chatWithAI(currentMessage);
+      console.log('🤖 AI Response received:', response);
       
-      const aiResponse = generateAIResponse(inputMessage);
       const aiMessage = {
         id: Date.now() + 1,
-        text: aiResponse,
+        text: response.response,
         sender: 'ai',
         timestamp: new Date().toISOString()
       };
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
-      showNotification('Failed to get AI response 😞', 'error');
+      console.error('AI Chat Error:', error);
+      showNotification('Failed to get AI response 😞 Please try again.', 'error');
+      
+      // Fallback message if API fails
+      const fallbackMessage = {
+        id: Date.now() + 1,
+        text: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment! 🤖",
+        sender: 'ai',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, fallbackMessage]);
     } finally {
       setIsTyping(false);
       setLoading(false);
     }
-  };
-
-  const generateAIResponse = (userInput) => {
-    const input = userInput.toLowerCase();
-    
-    // Simple response logic - in production, this would be a proper AI API call
-    if (input.includes('stressed') || input.includes('anxiety') || input.includes('worried')) {
-      return "I hear you're feeling stressed. That's totally valid - stress is a normal part of life. Would you like to talk about what's causing it? Sometimes just expressing these feelings can help lighten the load. 💙";
-    }
-    
-    if (input.includes('angry') || input.includes('frustrated') || input.includes('mad')) {
-      return "Anger and frustration are powerful emotions. It sounds like something really got to you. Want to tell me more about what happened? I'm here to listen without judgment. 🤗";
-    }
-    
-    if (input.includes('sad') || input.includes('depressed') || input.includes('down')) {
-      return "I'm sorry you're feeling down. Those feelings are real and important. You don't have to go through this alone. What's been weighing on your heart lately? 💜";
-    }
-    
-    if (input.includes('work') || input.includes('job') || input.includes('boss')) {
-      return "Work stuff can be really challenging! Whether it's deadlines, colleagues, or just the daily grind - it all adds up. What's going on at work that's bothering you? Maybe we can brainstorm some ways to make it better. 💼";
-    }
-    
-    if (input.includes('relationship') || input.includes('friend') || input.includes('partner')) {
-      return "Relationships can be complex, right? Whether it's with friends, family, or a partner - they all have their ups and downs. What's happening in your relationships that you'd like to talk about? 💕";
-    }
-    
-    if (input.includes('help') || input.includes('advice')) {
-      return "I'm here to help! While I can't solve everything, I can definitely listen and maybe offer some perspective. What kind of help are you looking for? Sometimes talking through things can help clarify what we need. ✨";
-    }
-    
-    if (input.includes('thank') || input.includes('thanks')) {
-      return "Aww, you're so welcome! 🥰 I'm really glad I could help. That's what I'm here for - to be a friendly ear whenever you need one. Feel free to come back anytime you want to chat!";
-    }
-    
-    if (input.includes('transform') || input.includes('rant') || input.includes('creative')) {
-      return "Oh, you're interested in transforming your thoughts creatively? That's awesome! 🎨 RantSmith AI can turn your rants into poems, songs, stories, and more. Have you tried the rant submission feature yet? It's pretty magical!";
-    }
-    
-    // Default responses
-    const defaultResponses = [
-      "That's really interesting! Tell me more about that. I'd love to understand your perspective better. 🤔",
-      "I can sense there's a lot going on for you. Want to dive deeper into what you're feeling? I'm here to listen. 👂",
-      "Thanks for sharing that with me. How are you feeling about all of this? Your emotions matter. 💭",
-      "That sounds like it's really affecting you. What's the most challenging part about this situation? 🤗",
-      "I appreciate you opening up to me. Sometimes it helps just to get things out, right? What else is on your mind? 💙"
-    ];
-    
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
   };
 
   const formatTime = (timestamp) => {

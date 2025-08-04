@@ -2,6 +2,7 @@
 
 import jwt
 from flask import request, jsonify, current_app
+from flask_login import login_user
 from functools import wraps
 from app.models import User
 
@@ -32,8 +33,8 @@ def jwt_required(f):
             if not user:
                 return jsonify({'error': 'User not found'}), 404
             
-            # Add user to request context
-            request.current_user = user
+            # Log in the user for this request so current_user works
+            login_user(user)
             
             return f(*args, **kwargs)
             

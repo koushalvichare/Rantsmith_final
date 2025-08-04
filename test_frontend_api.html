@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend API Test</title>
+</head>
+<body>
+    <h1>Test Frontend API Communication</h1>
+    <button onclick="testHealth()">Test Health Endpoint</button>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testAIChat()">Test AI Chat (needs login first)</button>
+    <div id="output"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000';
+        
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                document.getElementById('output').innerHTML = `<pre>Health: ${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('output').innerHTML = `<pre>Health Error: ${error.message}</pre>`;
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'chatuser',
+                        password: 'password123'
+                    })
+                });
+                const data = await response.json();
+                if (data.token) {
+                    localStorage.setItem('testToken', data.token);
+                }
+                document.getElementById('output').innerHTML = `<pre>Login: ${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('output').innerHTML = `<pre>Login Error: ${error.message}</pre>`;
+            }
+        }
+        
+        async function testAIChat() {
+            try {
+                const token = localStorage.getItem('testToken');
+                if (!token) {
+                    document.getElementById('output').innerHTML = '<pre>No token found. Please login first.</pre>';
+                    return;
+                }
+                
+                const response = await fetch(`${API_BASE}/api/ai/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        message: 'Hello from frontend test!'
+                    })
+                });
+                const data = await response.json();
+                document.getElementById('output').innerHTML = `<pre>AI Chat: ${JSON.stringify(data, null, 2)}</pre>`;
+            } catch (error) {
+                document.getElementById('output').innerHTML = `<pre>AI Chat Error: ${error.message}</pre>`;
+            }
+        }
+    </script>
+</body>
+</html>

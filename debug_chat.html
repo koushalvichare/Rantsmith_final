@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { border-color: #4CAF50; background: #f1f8e9; }
+        .error { border-color: #f44336; background: #ffebee; }
+        .warning { border-color: #ff9800; background: #fff3e0; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #2196F3; color: white; }
+        .btn-success { background: #4CAF50; color: white; }
+        .btn-warning { background: #ff9800; color: white; }
+        input, textarea { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+        #results { margin-top: 20px; }
+        .log { background: #f9f9f9; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 AI Chat Debug Test</h1>
+        
+        <div class="debug-section">
+            <h3>1. Server Health Check</h3>
+            <button class="btn-primary" onclick="testHealth()">Test Server Health</button>
+            <div id="health-result"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>2. Authentication Test</h3>
+            <input type="email" id="email" placeholder="Email" value="test@example.com">
+            <input type="password" id="password" placeholder="Password" value="testpass123">
+            <button class="btn-success" onclick="testLogin()">Test Login</button>
+            <div id="auth-result"></div>
+        </div>
+
+        <div class="debug-section">
+            <h3>3. AI Chat Test</h3>
+            <textarea id="message" placeholder="Enter test message" rows="3">tell me joke of the day</textarea>
+            <button class="btn-warning" onclick="testChat()">Test AI Chat</button>
+            <div id="chat-result"></div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            resultsDiv.appendChild(logDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function testHealth() {
+            try {
+                log('🏥 Testing server health...', 'info');
+                const response = await fetch('http://127.0.0.1:5000/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('health-result').innerHTML = '<div class="success">✅ Server is healthy!</div>';
+                    log(`✅ Health check passed: ${data.message}`, 'success');
+                } else {
+                    document.getElementById('health-result').innerHTML = '<div class="error">❌ Server health check failed</div>';
+                    log(`❌ Health check failed: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                document.getElementById('health-result').innerHTML = '<div class="error">❌ Cannot connect to server</div>';
+                log(`❌ Health check error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            try {
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                log(`🔑 Attempting login with ${email}...`, 'info');
+                
+                const response = await fetch('http://127.0.0.1:5000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.token) {
+                    authToken = data.token;
+                    document.getElementById('auth-result').innerHTML = '<div class="success">✅ Login successful!</div>';
+                    log(`✅ Login successful! Token: ${authToken.substring(0, 20)}...`, 'success');
+                } else {
+                    document.getElementById('auth-result').innerHTML = `<div class="error">❌ Login failed: ${data.error || 'Unknown error'}</div>`;
+                    log(`❌ Login failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                document.getElementById('auth-result').innerHTML = '<div class="error">❌ Login request failed</div>';
+                log(`❌ Login error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testChat() {
+            try {
+                if (!authToken) {
+                    document.getElementById('chat-result').innerHTML = '<div class="warning">⚠️ Please login first</div>';
+                    log('⚠️ No auth token - please login first', 'warning');
+                    return;
+                }
+
+                const message = document.getElementById('message').value;
+                log(`🤖 Testing AI chat with message: "${message}"`, 'info');
+                
+                const response = await fetch('http://127.0.0.1:5000/api/ai/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ 
+                        message: message,
+                        personality: 'supportive' 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const aiResponse = data.response;
+                    document.getElementById('chat-result').innerHTML = `
+                        <div class="success">
+                            ✅ AI Chat working!<br>
+                            <strong>AI Response:</strong> ${aiResponse}
+                        </div>
+                    `;
+                    log(`✅ AI Response received: ${aiResponse.substring(0, 100)}...`, 'success');
+                } else {
+                    document.getElementById('chat-result').innerHTML = `<div class="error">❌ AI Chat failed: ${data.error || 'Unknown error'}</div>`;
+                    log(`❌ AI Chat failed: ${data.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                document.getElementById('chat-result').innerHTML = '<div class="error">❌ AI Chat request failed</div>';
+                log(`❌ AI Chat error: ${error.message}`, 'error');
+            }
+        }
+
+        // Test health on page load
+        window.onload = function() {
+            log('🚀 Debug test page loaded', 'info');
+            testHealth();
+        };
+    </script>
+</body>
+</html>

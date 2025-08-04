@@ -1,3 +1,4 @@
+from flask_login import current_user
 from flask import Blueprint, request, jsonify, current_app
 from werkzeug.utils import secure_filename
 import os
@@ -30,7 +31,7 @@ def submit_rant():
         
         # Create new rant
         rant = Rant(
-            user_id=request.current_user.id,
+            user_id=current_user.id,
             content=content,
             rant_type=RantType.TEXT if input_type == 'text' else RantType.AUDIO,
             input_type=input_type,
@@ -66,7 +67,7 @@ def get_rant_history():
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
         
-        rants = Rant.query.filter_by(user_id=request.current_user.id)\
+        rants = Rant.query.filter_by(user_id=current_user.id)\
                           .order_by(Rant.created_at.desc())\
                           .paginate(page=page, per_page=per_page, error_out=False)
         
@@ -87,7 +88,7 @@ def get_rant_history():
 def get_rant(rant_id):
     """Get specific rant details"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
@@ -102,7 +103,7 @@ def get_rant(rant_id):
 def delete_rant(rant_id):
     """Delete a rant"""
     try:
-        rant = Rant.query.filter_by(id=rant_id, user_id=request.current_user.id).first()
+        rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
@@ -127,7 +128,7 @@ def get_rant_analytics():
     try:
         # Get emotion distribution
         emotion_counts = db.session.query(Rant.detected_emotion, db.func.count(Rant.id))\
-                                  .filter_by(user_id=request.current_user.id)\
+                                  .filter_by(user_id=current_user.id)\
                                   .group_by(Rant.detected_emotion)\
                                   .all()
         
@@ -135,14 +136,14 @@ def get_rant_analytics():
         monthly_counts = db.session.query(
             db.func.date_format(Rant.created_at, '%Y-%m'),
             db.func.count(Rant.id)
-        ).filter_by(user_id=request.current_user.id)\
+        ).filter_by(user_id=current_user.id)\
          .group_by(db.func.date_format(Rant.created_at, '%Y-%m'))\
          .order_by(db.func.date_format(Rant.created_at, '%Y-%m'))\
          .all()
         
         # Get average sentiment
         avg_sentiment = db.session.query(db.func.avg(Rant.sentiment_score))\
-                                 .filter_by(user_id=request.current_user.id)\
+                                 .filter_by(user_id=current_user.id)\
                                  .scalar()
         
         return jsonify({
@@ -154,7 +155,7 @@ def get_rant_analytics():
                 month: count for month, count in monthly_counts
             },
             'average_sentiment': float(avg_sentiment) if avg_sentiment else 0.0,
-            'total_rants': Rant.query.filter_by(user_id=request.current_user.id).count()
+            'total_rants': Rant.query.filter_by(user_id=current_user.id).count()
         }), 200
         
     except Exception as e:

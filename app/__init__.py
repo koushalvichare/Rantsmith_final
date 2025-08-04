@@ -20,6 +20,11 @@ def create_app(config_name='default'):
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Please log in to access this page.'
     
+    # Initialize AI Service as a global service
+    from app.services.gemini_service import GeminiService
+    app.gemini_service = GeminiService()
+    app.gemini_service.init_app(app)
+    
     # Add a simple home route for testing
     @app.route('/')
     def home():

@@ -1,4 +1,4 @@
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:5000';
 
 class APIService {
   constructor() {
@@ -100,7 +100,7 @@ class APIService {
 
   // Rant endpoints
   async submitRant(content, transformationType, tone, privacy) {
-    return await this.makeRequest('/rants', {
+    return await this.makeRequest('/api/rant', {
       method: 'POST',
       body: JSON.stringify({
         content,
@@ -118,28 +118,28 @@ class APIService {
       ...(filter && { filter })
     });
     
-    return await this.makeRequest(`/rants?${params}`);
+    return await this.makeRequest(`/api/rant?${params}`);
   }
 
   async getRant(id) {
-    return await this.makeRequest(`/rants/${id}`);
+    return await this.makeRequest(`/api/rant/${id}`);
   }
 
   async deleteRant(id) {
-    return await this.makeRequest(`/rants/${id}`, {
+    return await this.makeRequest(`/api/rant/${id}`, {
       method: 'DELETE'
     });
   }
 
   async toggleRantFavorite(id) {
-    return await this.makeRequest(`/rants/${id}/favorite`, {
+    return await this.makeRequest(`/api/rant/${id}/favorite`, {
       method: 'POST'
     });
   }
 
   // AI Processing endpoints
   async transformRant(content, transformationType, tone) {
-    return await this.makeRequest('/ai/transform', {
+    return await this.makeRequest('/api/ai/transform', {
       method: 'POST',
       body: JSON.stringify({
         content,
@@ -150,7 +150,7 @@ class APIService {
   }
 
   async chatWithAI(message, conversationId = null) {
-    return await this.makeRequest('/ai/chat', {
+    return await this.makeRequest('/api/ai/chat', {
       method: 'POST',
       body: JSON.stringify({
         message,
@@ -192,36 +192,36 @@ class APIService {
 
   // User endpoints
   async getUserProfile() {
-    return await this.makeRequest('/user/profile');
+    return await this.makeRequest('/api/user/profile');
   }
 
   async updateUserProfile(profileData) {
-    return await this.makeRequest('/user/profile', {
+    return await this.makeRequest('/api/user/profile', {
       method: 'PUT',
       body: JSON.stringify(profileData)
     });
   }
 
   async getUserPreferences() {
-    return await this.makeRequest('/user/preferences');
+    return await this.makeRequest('/api/user/preferences');
   }
 
   async updateUserPreferences(preferences) {
-    return await this.makeRequest('/user/preferences', {
+    return await this.makeRequest('/api/user/preferences', {
       method: 'PUT',
       body: JSON.stringify(preferences)
     });
   }
 
   async deleteUserAccount() {
-    return await this.makeRequest('/user/account', {
+    return await this.makeRequest('/api/user/account', {
       method: 'DELETE'
     });
   }
 
   // Stats endpoints
   async getUserStats() {
-    return await this.makeRequest('/user/stats');
+    return await this.makeRequest('/api/user/stats');
   }
 
   async getDashboardData() {

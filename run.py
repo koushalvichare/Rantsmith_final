@@ -1,5 +1,12 @@
 import os
 import sys
+
+# Set UTF-8 encoding for stdout and stderr
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8')
+
 from app import create_app
 
 def main():
@@ -22,14 +29,14 @@ def main():
         
     except ImportError as e:
         print(f"❌ Import Error: {e}")
-        print("\n🔧 Try installing dependencies:")
-        print("pip install -r requirements.txt")
+        print("\n🔧 This might be due to a missing dependency or an incorrect import path.")
+        print("   Try installing dependencies:")
+        print("   pip install -r requirements.txt")
         sys.exit(1)
         
     except Exception as e:
         print(f"❌ Application Error: {e}")
-        print("\n🔧 Try running the test script first:")
-        print("python test_app.py")
+        print("\n🔧 An unexpected error occurred. Please check the logs for more details.")
         sys.exit(1)
 
 if __name__ == '__main__':
