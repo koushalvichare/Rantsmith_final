@@ -1,0 +1,22 @@
+# Render ignore file
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.local
+.venv/
+venv/
+node_modules/
+.git/
+.gitignore
+README.md
+*.md
+frontend/
+uploads/
+instance/
+.pytest_cache/
+tests/
+*.log
+*.sqlite
+*.db

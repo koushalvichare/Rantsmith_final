@@ -1,0 +1,25 @@
+# Essential dependencies for RantSmith AI deployment
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-Login==0.6.2
+Flask-CORS==4.0.0
+Werkzeug==2.3.7
+python-dotenv==1.0.0
+PyJWT==2.8.0
+gunicorn==21.2.0
+
+# AI dependencies
+google-generativeai==0.8.5
+requests==2.31.0
+
+# Database
+SQLAlchemy==2.0.20
+
+# File handling
+python-multipart==0.0.6
+
+# Basic image processing
+Pillow==10.0.0
+
+# Security
+bcrypt==4.0.1
