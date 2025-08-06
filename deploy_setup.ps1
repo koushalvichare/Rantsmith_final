@@ -155,7 +155,7 @@ Render and Vercel deployment ready
 Clean codebase without test files
 
 Features:
-Professional psychologist AI (Dr. Sarah)
+Professional psychologist AI (Dr. Elaichi)
 Creative joke generation
 Emotional support responses
 Complete deployment setup"

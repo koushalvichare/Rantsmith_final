@@ -54,7 +54,7 @@ def create_app(config_name='default'):
         from app.routes.media_routes import media_bp
         
         app.register_blueprint(auth_bp, url_prefix='/auth')
-        app.register_blueprint(rant_bp, url_prefix='/api/rant')
+        app.register_blueprint(rant_bp, url_prefix='/api/rants')
         app.register_blueprint(ai_bp, url_prefix='/api/ai')
         app.register_blueprint(user_bp, url_prefix='/api/user')
         app.register_blueprint(media_bp, url_prefix='/api/media')

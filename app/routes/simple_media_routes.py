@@ -1,48 +1,9 @@
-from flask_login import current_user
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app.services.simple_media_service import SimpleMediaService
 from app.models import Rant, GeneratedContent, ContentType, User
 from app import db
+from app.utils.auth import jwt_required, get_current_user
 import logging
-import jwt
-from flask import current_app
-from functools import wraps
-
-# JWT Authentication decorator
-def jwt_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        try:
-            token = request.headers.get('Authorization')
-            if not token:
-                return jsonify({'error': 'No token provided'}), 401
-            
-            # Remove 'Bearer ' prefix
-            if token.startswith('Bearer '):
-                token = token[7:]
-            
-            # Verify token
-            try:
-                payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
-                user_id = payload['user_id']
-            except jwt.ExpiredSignatureError:
-                return jsonify({'error': 'Token has expired'}), 401
-            except jwt.InvalidTokenError:
-                return jsonify({'error': 'Invalid token'}), 401
-            
-            user = User.query.get(user_id)
-            if not user:
-                return jsonify({'error': 'User not found'}), 404
-            
-            # Add user to request context
-            # request.current_user = user  # Not needed, use flask_login.current_user
-            return f(*args, **kwargs)
-            
-        except Exception as e:
-            logging.error(f"JWT auth error: {e}")
-            return jsonify({'error': 'Authentication failed'}), 401
-    
-    return decorated_function
 
 media_bp = Blueprint('media', __name__)
 
@@ -79,6 +40,10 @@ def upload_audio():
         
         if result['success']:
             # Create a new rant from the transcribed text
+            current_user = get_current_user()
+            if not current_user:
+                return jsonify({'error': 'User not authenticated'}), 401
+                
             rant = Rant(
                 user_id=current_user.id,
                 content=result['text'],
@@ -134,6 +99,10 @@ def upload_image():
 def generate_speech(rant_id):
     """Generate speech from rant text"""
     try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'User not authenticated'}), 401
+            
         rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
@@ -163,6 +132,10 @@ def generate_speech(rant_id):
 def generate_meme(rant_id):
     """Generate meme from rant text"""
     try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'User not authenticated'}), 401
+            
         rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
@@ -191,6 +164,10 @@ def generate_meme(rant_id):
 def generate_video(rant_id):
     """Generate video from rant text"""
     try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'User not authenticated'}), 401
+            
         rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
@@ -218,8 +195,12 @@ def generate_video(rant_id):
 @media_bp.route('/transform-with-ai/<int:rant_id>', methods=['POST'])
 @jwt_required
 def transform_with_ai(rant_id):
-    """Transform rant content and generate text output"""
+    """Transform rant content and generate text output using real AI"""
     try:
+        current_user = get_current_user()
+        if not current_user:
+            return jsonify({'error': 'User not authenticated'}), 401
+            
         rant = Rant.query.filter_by(id=rant_id, user_id=current_user.id).first()
         if not rant:
             return jsonify({'error': 'Rant not found'}), 404
@@ -228,21 +209,26 @@ def transform_with_ai(rant_id):
         transformation_type = data.get('transformation_type', 'poem')
         output_format = data.get('output_format', 'text')
         
-        # Simple transformation based on type
-        original_content = rant.content
+        # Use real AI transformation with Gemini service
+        try:
+            # Create a new instance since app doesn't have gemini_service attribute
+            from app.services.gemini_service import GeminiService
+            gemini_service = GeminiService(current_app)
+        except Exception as service_error:
+            print(f"⚠️  Gemini service initialization error: {service_error}")
+            return jsonify({"error": "AI service temporarily unavailable"}), 503
         
-        if transformation_type == 'poem':
-            lines = original_content.split('.')
-            transformed_text = '\n'.join([f"In feelings deep, {line.strip()}," for line in lines[:4] if line.strip()])
-            transformed_text += f"\n\nTransformed from: {original_content[:50]}..."
-        elif transformation_type == 'song':
-            transformed_text = f"[Verse 1]\n{original_content[:100]}...\n\n[Chorus]\nEvery feeling has its place\nIn this song of life and grace"
-        elif transformation_type == 'story':
-            transformed_text = f"Once upon a time, someone felt exactly like this: {original_content}\n\nAnd they lived happily ever after, knowing their feelings were valid."
-        elif transformation_type == 'motivational':
-            transformed_text = f"Remember this: {original_content}\n\nBut also remember - you are stronger than you know, and this too shall pass. Every challenge is an opportunity to grow."
-        else:
-            transformed_text = f"Transformed ({transformation_type}): {original_content}"
+        print(f"🔍 Transform - Using Gemini for {transformation_type} transformation")
+        print(f"🔍 Transform - Content preview: {rant.content[:50]}...")
+        
+        # Transform using real Gemini AI with fallback
+        try:
+            transformed_text = gemini_service.transform_content(rant.content, transformation_type)
+            print(f"🔍 Transform - AI result preview: {transformed_text[:100]}...")
+        except Exception as ai_error:
+            print(f"⚠️  AI transformation failed: {ai_error}, using fallback")
+            # Fallback to simple transformation if AI fails
+            transformed_text = f"Enhanced {transformation_type} based on: {rant.content}\n\n[This content was generated using fallback mode due to AI service unavailability]"
         
         # Mark rant as processed
         rant.processed = True
