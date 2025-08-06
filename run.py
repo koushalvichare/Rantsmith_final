@@ -9,12 +9,12 @@ if sys.stderr.encoding != 'utf-8':
 
 from app import create_app
 
+# Create the Flask app instance for Gunicorn
+app = create_app(os.getenv('FLASK_ENV', 'production'))
+
 def main():
-    """Main function to run the application"""
+    """Main function to run the application in development"""
     try:
-        # Create the Flask app
-        app = create_app(os.getenv('FLASK_ENV', 'development'))
-        
         print("🚀 Starting RantSmith AI...")
         print(f"Environment: {os.getenv('FLASK_ENV', 'development')}")
         print(f"Debug mode: {app.config['DEBUG']}")
