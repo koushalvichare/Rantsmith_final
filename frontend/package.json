@@ -10,7 +10,8 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "npx vite build",
+    "build": "vite build --mode production",
+    "vercel-build": "vite build --mode production",
     "preview": "vite preview",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0"
   },

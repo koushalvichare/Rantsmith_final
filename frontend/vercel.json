@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "buildCommand": "npx vite build",
+  "buildCommand": "bash build.sh",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "framework": "vite",
+  "framework": null,
   "routes": [
     {
       "src": "/assets/(.*)",
