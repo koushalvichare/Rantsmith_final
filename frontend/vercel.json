@@ -17,6 +17,6 @@
     { "src": "/.*", "dest": "/index.html" }
   ],
   "env": {
-    "VITE_API_BASE_URL": "https://your-backend-app.onrender.com"
+    "VITE_API_BASE_URL": "https://rantsmith-backend.onrender.com"
   }
 }

@@ -4,7 +4,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install Flask==2.3.3 Flask-SQLAlchemy==3.0.5 Flask-Login==0.6.2 Flask-CORS==4.0.0 Werkzeug==2.3.7 python-dotenv==1.0.0 PyJWT==2.8.0 gunicorn==21.2.0 google-generativeai==0.8.5 requests==2.31.0 SQLAlchemy==2.0.20 Pillow==10.0.0 bcrypt==4.0.1
     startCommand: gunicorn --bind 0.0.0.0:$PORT run:app
     envVars:
       - key: FLASK_ENV
@@ -15,12 +15,11 @@ services:
         generateValue: true
       - key: DATABASE_URL
         value: sqlite:///rantsmith.db
-      # Add your API keys in the Render dashboard environment variables section
-      # - key: GEMINI_API_KEY
-      #   value: your-gemini-api-key
-      # - key: OPENAI_API_KEY
-      #   value: your-openai-api-key
-      # - key: ELEVENLABS_API_KEY
-      #   value: your-elevenlabs-api-key
-      # - key: RUNWAYML_API_KEY
-      #   value: your-runwayml-api-key
+      - key: GEMINI_API_KEY
+        value: AIzaSyBzhRTPareqAhVlqGfvlHjn57dA_ei2sTE
+      - key: GOOGLE_API_KEY
+        value: AIzaSyBzhRTPareqAhVlqGfvlHjn57dA_ei2sTE
+      - key: ELEVENLABS_API_KEY
+        value: sk_03dd9427c42b5ac7818b16d82278c60554ae8c14aad586a4
+      - key: RUNWAYML_API_KEY
+        value: key_645fe4a90f0523aa467a120611d7dc2c1063093414e7be0d3055d350601d4fe56b48c133438dac13b40ee4870a9c4dcebfbe42116aaeb21b0f944502d8b05bf9
