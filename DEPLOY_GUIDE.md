@@ -62,7 +62,7 @@
 
 ### 2. Test Your Deployment:
 - Visit your frontend URL
-- Try the AI chat with Dr. Sarah psychologist
+- Try the AI chat with Dr. Elaichi psychologist
 - Test: "Tell me a psychology joke" - should get creative, non-repeated responses
 
 ### 3. Update CORS (if needed):
@@ -71,7 +71,7 @@ If you get CORS errors, add your Vercel domain to the backend CORS settings.
 ---
 
 ## 🎯 Key Features Ready:
-- ✅ **Psychologist AI Personality** - Dr. Sarah with mood-uplifting responses
+- ✅ **Psychologist AI Personality** - Dr. Elaichi with mood-uplifting responses
 - ✅ **Creative Joke Generation** - No more repeated jokes
 - ✅ **Emotional Support** - Professional psychological guidance
 - ✅ **All API Keys Pre-configured**
